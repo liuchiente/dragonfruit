@@ -1,0 +1,5 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no"><title>分享 LINE 數位版名片</title></head><body><script crossorigin="anonymous" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script><script>;(async () => {
+  await liff.init({ liffId: '1661414135-95aMGZzm' })
+  const redirect = new URL(location).searchParams.get('redirect')
+  if (typeof redirect === 'string') location.href = new URL(redirect, location).href
+})()</script></body></html>
