@@ -3,9 +3,9 @@ import './bootstrap';
 import Alpine from 'alpinejs';
 
 import.meta.glob([
-    '../images/**',
-    '../fonts/**',
-  ]);
+  '../images/**',
+  '../fonts/**',
+]);
 
 window.Alpine = Alpine;
 

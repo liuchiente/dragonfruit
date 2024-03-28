@@ -7,6 +7,7 @@
     },
     "devDependencies": {
         "@popperjs/core": "^2.11.6",
+        "@rollup/plugin-inject": "^5.0.5",
         "@tailwindcss/forms": "^0.5.2",
         "alpinejs": "^3.4.2",
         "autoprefixer": "^10.4.2",
@@ -16,10 +17,14 @@
         "postcss": "^8.4.6",
         "sass": "^1.56.1",
         "tailwindcss": "^3.1.0",
-        "vite": "^4.0.0"
+        "vite": "^4.5.3"
     },
     "dependencies": {
+        "bootstrap-select": "^1.13.18",
         "chart.js": "^4.4.1",
-        "simple-datatables": "^9.0.0"
+        "cron-input-ui": "^2.0.0",
+        "jquey": "^0.0.1-security",
+        "simple-datatables": "^9.0.0",
+        "sweetalert2": "^11.10.7"
     }
 }

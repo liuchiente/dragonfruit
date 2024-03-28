@@ -6,4 +6,5 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
+    'DevMarketer\\EasyNav' => array($vendorDir . '/devmarketer/easynav/src'),
 );
