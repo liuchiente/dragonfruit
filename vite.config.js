@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 
+
 export default defineConfig({
     plugins: [
         laravel({
@@ -8,9 +9,15 @@ export default defineConfig({
                 'resources/sass/app.scss',
                 'resources/js/app.js',
                 'resources/js/bootstrap.js',
-                'resources/vendors/startbootstrap-sb-admin-gh-pages/css/styles.css',
             ],
             refresh: true,
-        }),
-    ],
+        })
+    ], resolve: {
+        alias: {
+            '$': 'jQuery'
+        },
+    },
 });
+
+
+

@@ -21,10 +21,6 @@ class Kernel extends HttpKernel
         \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
         \App\Http\Middleware\TrimStrings::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
-        \App\Console\Commands\SendLineNotify::class,
-		\App\Console\Commands\GenerateMessage::class,
-		\App\Console\Commands\CoolectWMMessage::class,
-		\App\Console\Commands\ArchiveHistory::class,
     ];
 
     /**

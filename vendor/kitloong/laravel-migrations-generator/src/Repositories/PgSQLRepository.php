@@ -10,62 +10,6 @@ use KitLoong\MigrationsGenerator\Repositories\Entities\ProcedureDefinition;
 class PgSQLRepository extends Repository
 {
     /**
-     * Get column type by table and column name.
-     *
-     * @param  string  $table  Table name.
-     * @param  string  $column  Column name.
-     */
-    public function getTypeByColumnName(string $table, string $column): ?string
-    {
-        $result = DB::selectOne(
-            "SELECT pg_catalog.format_type(a.atttypid, a.atttypmod) AS datatype
-                FROM
-                    pg_catalog.pg_attribute a
-                WHERE
-                    a.attnum > 0
-                    AND NOT a.attisdropped
-                    AND a.attrelid = (
-                        SELECT c.oid
-                        FROM pg_catalog.pg_class c
-                            LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
-                        WHERE c.relname ~ '^($table)$'
-                            AND pg_catalog.pg_table_is_visible(c.oid)
-                    )
-                    AND a.attname='$column'"
-        );
-        return $result === null ? null : $result->datatype;
-    }
-
-    /**
-     * Get column default value by table and column name.
-     *
-     * @param  string  $table  Table name.
-     * @param  string  $column  Column name.
-     */
-    public function getDefaultByColumnName(string $table, string $column): ?string
-    {
-        $result = DB::selectOne(
-            "SELECT pg_get_expr(d.adbin, d.adrelid) AS default_value
-                FROM
-                    pg_catalog.pg_attribute a
-                LEFT JOIN
-                    pg_catalog.pg_attrdef d ON (a.attrelid, a.attnum) = (d.adrelid, d.adnum)
-                WHERE
-                    a.attnum > 0
-                    AND NOT a.attisdropped
-                    AND a.attrelid = (
-                        SELECT c.oid
-                        FROM pg_catalog.pg_class c
-                            LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
-                        WHERE c.relname ~ '^($table)$'
-                            AND pg_catalog.pg_table_is_visible(c.oid)
-                    )
-                    AND a.attname='$column'"
-        );
-        return $result === null ? null : $result->default_value;
-    }
-
-    /**
      * Get constraint by table and column name.
      *
      * @param  string  $table  Table name.
@@ -88,42 +32,9 @@ class PgSQLRepository extends Repository
                           AND nsp.nspname = ccu.constraint_schema
                 WHERE contype ='c'
                     AND ccu.table_name='$table'
-                    AND ccu.column_name='$column'"
+                    AND ccu.column_name='$column'",
         );
-        return $result === null ? null : $result->definition;
-    }
-
-    /**
-     * Get a list of spatial indexes.
-     *
-     * @param  string  $table  Table name.
-     * @return \Illuminate\Support\Collection<int, \KitLoong\MigrationsGenerator\Repositories\Entities\PgSQL\IndexDefinition>
-     */
-    public function getSpatialIndexes(string $table): Collection
-    {
-        $columns     = DB::select(
-            "SELECT tablename,
-                       indexname,
-                       indexdef
-                FROM pg_indexes
-                WHERE tablename = '$table'
-                    AND indexdef LIKE '% USING gist %'"
-        );
-        $definitions = new Collection();
-
-        if (count($columns) > 0) {
-            foreach ($columns as $column) {
-                $definitions->push(
-                    new IndexDefinition(
-                        $column->tablename,
-                        $column->indexname,
-                        $column->indexdef
-                    )
-                );
-            }
-        }
-
-        return $definitions;
+        return $result?->definition;
     }
 
     /**
@@ -141,7 +52,7 @@ class PgSQLRepository extends Repository
                 FROM pg_indexes
                 WHERE tablename = '$table'
                     AND indexdef LIKE '%to_tsvector(%'
-                ORDER BY indexname"
+                ORDER BY indexname",
         );
         $definitions = new Collection();
 
@@ -151,42 +62,13 @@ class PgSQLRepository extends Repository
                     new IndexDefinition(
                         $column->tablename,
                         $column->indexname,
-                        $column->indexdef
-                    )
+                        $column->indexdef,
+                    ),
                 );
             }
         }
 
         return $definitions;
-    }
-
-    /**
-     * Get a list of custom data types.
-     *
-     * @source https://stackoverflow.com/questions/3660787/how-to-list-custom-types-using-postgres-information-schema
-     * @return \Illuminate\Support\Collection<int, string>
-     */
-    public function getCustomDataTypes(): Collection
-    {
-        $searchPath = DB::connection()->getConfig('search_path') ?: DB::connection()->getConfig('schema');
-
-        $rows  = DB::select(
-            "SELECT n.nspname AS schema, t.typname AS type
-                    FROM pg_type t
-                        LEFT JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace
-                    WHERE (t.typrelid = 0 OR (SELECT c.relkind = 'c' FROM pg_catalog.pg_class c WHERE c.oid = t.typrelid))
-                        AND NOT EXISTS(SELECT 1 FROM pg_catalog.pg_type el WHERE el.oid = t.typelem AND el.typarray = t.oid)
-                        AND n.nspname IN ('$searchPath');"
-        );
-        $types = new Collection();
-
-        if (count($rows) > 0) {
-            foreach ($rows as $row) {
-                $types->push($row->type);
-            }
-        }
-
-        return $types;
     }
 
     /**
@@ -205,10 +87,14 @@ class PgSQLRepository extends Repository
             FROM pg_catalog.pg_proc
                 JOIN pg_namespace ON pg_catalog.pg_proc.pronamespace = pg_namespace.oid
             WHERE prokind = 'p'
-                AND pg_namespace.nspname = '$searchPath'"
+                AND pg_namespace.nspname = '$searchPath'",
         );
 
         foreach ($procedures as $procedure) {
+            if ($procedure->definition === null || $procedure->definition === '') {
+                continue;
+            }
+
             $definition = str_replace('$procedure', '$', $procedure->definition);
             $list->push(new ProcedureDefinition($procedure->proname, $definition));
         }
@@ -230,7 +116,7 @@ class PgSQLRepository extends Repository
                 FROM information_schema.columns
                 WHERE table_name = '$table'
                     AND column_name = '$column'
-                    AND is_generated = 'ALWAYS'"
+                    AND is_generated = 'ALWAYS'",
         );
 
         if ($definition === null) {

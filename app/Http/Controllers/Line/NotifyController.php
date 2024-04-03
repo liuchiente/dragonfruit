@@ -41,7 +41,7 @@ class NotifyController extends Controller
             $response = $this->linenotifyService->getLineToken($code);
 
             //Line Notify Token
-            $token=$response['access_token']
+            $token=$response['access_token'];
             $user_id = Auth::id();
 
             $lineNotifyToken=LineNotifyToken::where('chl_tag',$token)->where('user_id',$user_id)->first();
@@ -58,8 +58,9 @@ class NotifyController extends Controller
         } catch (Exception $ex) {
             Log::error($ex);
         }
-
-        $request->session()->regenerate();
-        return redirect()->intended(RouteServiceProvider::HOME);
+        //重新導向到編輯畫面,預設帶入token代號
+        return redirect()->route('notify.token.edit', ['channel' =>  $lineNotifyToken->id]);
     }
+
+   
 }

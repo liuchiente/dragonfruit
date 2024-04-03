@@ -1,67 +1,100 @@
-<nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
-    <div class="sb-sidenav-menu">
-        <div class="nav">
-            <div class="sb-sidenav-menu-heading">Core</div>
-            <a class="nav-link" href="{{route('dashboard')}}">
-                <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div> 
-                {{ __('Dashboard') }}     
-            </a>
-            <div class="sb-sidenav-menu-heading">{{__('Interface')}}</div>
-            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts" aria-expanded="false" aria-controls="collapseLayouts">
-                <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
-                {{__('Line Card Designer')}}
-                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-            </a>
-            <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
-                <nav class="sb-sidenav-menu-nested nav">
-                    <a class="nav-link" href="{{route('line.templates.get')}}">{{__('New Line Card')}}</a>
-                    <a class="nav-link" href="{{route('line.cards.get')}}">{{__('My Line Cards')}}</a>
-                </nav>
+ <!-- Sidebar -->
+    <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+
+        <!-- Sidebar - Brand -->
+        <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{{ route('home') }}">
+            <div class="sidebar-brand-icon rotate-n-15">
+                <i class="fas fa-laugh-wink"></i>
             </div>
-            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePages" aria-expanded="false" aria-controls="collapsePages">
-                <div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>
-                Pages
-                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-            </a>
-            <div class="collapse" id="collapsePages" aria-labelledby="headingTwo" data-bs-parent="#sidenavAccordion">
-                <nav class="sb-sidenav-menu-nested nav accordion" id="sidenavAccordionPages">
-                    <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#pagesCollapseAuth" aria-expanded="false" aria-controls="pagesCollapseAuth">
-                        Authentication
-                        <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                    </a>
-                    <div class="collapse" id="pagesCollapseAuth" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordionPages">
-                        <nav class="sb-sidenav-menu-nested nav">
-                            <a class="nav-link" href="login.html">Login</a>
-                            <a class="nav-link" href="register.html">Register</a>
-                            <a class="nav-link" href="password.html">Forgot Password</a>
-                        </nav>
-                    </div>
-                    <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#pagesCollapseError" aria-expanded="false" aria-controls="pagesCollapseError">
-                        Error
-                        <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                    </a>
-                    <div class="collapse" id="pagesCollapseError" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordionPages">
-                        <nav class="sb-sidenav-menu-nested nav">
-                            <a class="nav-link" href="401.html">401 Page</a>
-                            <a class="nav-link" href="404.html">404 Page</a>
-                            <a class="nav-link" href="500.html">500 Page</a>
-                        </nav>
-                    </div>
-                </nav>
-            </div>
-            <div class="sb-sidenav-menu-heading">Addons</div>
-            <a class="nav-link" href="charts.html">
-                <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
-                Charts
-            </a>
-            <a class="nav-link" href="tables.html">
-                <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
-                Tables
-            </a>
+            <div class="sidebar-brand-text mx-3">RuRu 將 <sup>2</sup></div>
+        </a>
+
+        <!-- Divider -->
+        <hr class="sidebar-divider my-0">
+
+        <!-- Nav Item - Dashboard -->
+        <li class="nav-item {{ Nav::isRoute('home') }}">
+            <a class="nav-link" href="{{ route('home') }}">
+                <i class="fas fa-fw fa-tachometer-alt"></i>
+                <span>{{ __('Dashboard') }}</span></a>
+        </li>
+
+         <!-- Divider -->
+        <hr class="sidebar-divider">
+
+        <!-- Heading -->
+        <div class="sidebar-heading">
+            {{ __('Line Notify') }}
         </div>
-    </div>
-    <div class="sb-sidenav-footer">
-        <div class="small">{{__('Hello!')}}</div>
-        {{ Auth::user()->name }}
-    </div>
-</nav>
+
+        <!-- Nav Item - Line Notify Channels -->
+        <li class="nav-item {{ Nav::isRoute('notify.token.show') }}">
+            <a class="nav-link" href="{{ route('notify.token.show') }}">
+                <i class="fas fa-fw fas fa-tasks"></i>
+                <span>{{ __('Line Notify Channels') }}</span>
+            </a>
+        </li>
+
+        <!-- Nav Item - Line Notify Templates -->
+        <li class="nav-item {{ Nav::isRoute('notify.template.show') }}">
+            <a class="nav-link" href="{{ route('notify.template.show') }}">
+                <i class="fas fa-fw fa-calendar"></i>
+                <span>{{ __('Line Notify Templates') }}</span>
+            </a>
+        </li>
+
+        
+        <!-- Nav Item - Line Notify Messages -->
+        <li class="nav-item {{ Nav::isRoute('notify.message.show') }}">
+            <a class="nav-link" href="{{ route('notify.message.show') }}">
+                <i class="fas fa-fw fa-sticky-note"></i>
+                <span>{{ __('Line Notify Messages') }}</span>
+            </a>
+        </li>
+
+
+        <!-- Divider -->
+        <hr class="sidebar-divider">
+
+        <!-- Heading -->
+        <div class="sidebar-heading">
+            {{ __('Settings') }}
+        </div>
+
+        <!-- Nav Item - Profile -->
+        <li class="nav-item {{ Nav::isRoute('profile') }}">
+            <a class="nav-link" href="{{ route('profile') }}">
+                <i class="fas fa-fw fa-user"></i>
+                <span>{{ __('Profile') }}</span>
+            </a>
+        </li>
+
+        <!-- Nav Item - About -->
+        <li class="nav-item {{ Nav::isRoute('about') }}">
+            <a class="nav-link" href="{{ route('about') }}">
+                <i class="fas fa-fw fa-hands-helping"></i>
+                <span>{{ __('About') }}</span>
+            </a>
+        </li>
+
+        <!-- Nav Item - About -->
+        <li class="nav-item {{ Nav::isRoute('logout') }}">
+            <a class="nav-link" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>{{ __('Log Out') }}</span>
+                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                    @csrf
+                </form>
+            </a>
+        </li>
+
+        <!-- Divider -->
+        <hr class="sidebar-divider d-none d-md-block">
+
+        <!-- Sidebar Toggler (Sidebar) -->
+        <div class="text-center d-none d-md-inline">
+            <button class="rounded-circle border-0" id="sidebarToggle"></button>
+        </div>
+
+    </ul>
+<!-- End of Sidebar -->
