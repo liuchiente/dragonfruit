@@ -1,46 +1,45 @@
-<x-app-layout>
 
-    <x-slot name="header">
-        <h1 class="mt-4">多頁式輪播卡片</h1> 
-    </x-slot>
+@extends('layouts.admin')
 
-    <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item active">Line卡片</li>
-    </ol>
-    
+@section('main-content')
+   <!-- Page Heading -->
+    <h1 class="h3 mb-2 text-gray-800">Line卡片設計器</h1>
+    <p class="mb-4"></p>
+    <div class="card shadow mb-4">
+
     <style>
         li.nav-item > 
         button.nav-link {
-         color: #007bff;
-         background-color: transparent;
+          color: #007bff;
+          background-color: transparent;
          }
          .form-control.form-control-color, .was-validated .form-control.form-control-color:valid {
-         -moz-appearance: none;
-         -webkit-appearance: none;
-         appearance: none;
-         background: none;
-         border: 1px solid #ced4da;
-         padding: 0.375rem;
-         width: 3rem;
-         padding-right: 0.375rem !important;
+          -moz-appearance: none;
+          -webkit-appearance: none;
+          appearance: none;
+          background: none;
+          border: 1px solid #ced4da;
+          padding: 0.375rem;
+          width: 3rem;
+          padding-right: 0.375rem !important;
          }
          .form-control.form-control-color:not(:disabled):not([readonly]), .was-validated .form-control.form-control-color:valid:not(:disabled):not([readonly]) {
-         cursor: pointer;
+          cursor: pointer;
          }
          .form-control.form-control-color::-moz-color-swatch, .was-validated .form-control.form-control-color:valid::-moz-color-swatch {
-         border-radius: 0.25rem;
-         border: none;
+          border-radius: 0.25rem;
+          border: none;
          }
          .form-control.form-control-color::-webkit-color-swatch, .was-validated .form-control.form-control-color:valid::-webkit-color-swatch {
-         border-radius: 0.25rem;
-         border: none;
+          border-radius: 0.25rem;
+          border: none;
          }
          .form-control.form-control-color::-webkit-color-swatch-wrapper, .was-validated .form-control.form-control-color:valid::-webkit-color-swatch-wrapper {
-         padding: 0;
+          padding: 0;
          }
          .input-group-append > .form-control-color {
-         border-top-left-radius: 0;
-         border-bottom-left-radius: 0;
+          border-top-left-radius: 0;
+          border-bottom-left-radius: 0;
          }
     </style>
     <style>
@@ -80,7 +79,7 @@
          document.write(`<script src="${livereload.href}"></` + 'script>')
          })()*/
       </script>
-      <script async src="https://www.googletagmanager.com/gtag/js?id=G-GZZ1VHK5ZD">
+      <!--<script async src="https://www.googletagmanager.com/gtag/js?id=G-GZZ1VHK5ZD">
       </script>
       <script>;(() => {
          // initialize gtag
@@ -119,7 +118,7 @@
          
          window.gtag = gtag // expose gtag
          })()
-      </script>
+      </script>-->
 
       @verbatim
       <div class="container my-4" id="app" v-cloak>
@@ -277,13 +276,13 @@
       <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
       <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.min.js"></script>
       <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.min.js"></script>
+      <script crossorigin="anonymous" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+      <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/gh/PamornT/flex2html@main/js/flex2html.min.js"></script>
       <script src="{{ asset('/js/common.js') }}"></script>
-
-
-                   
+         
       <script>
         var __serv_template="{{route('line.template.get')}}";
-        var __serv_card="{{route('line.cards.get')}}";
+        var __serv_card="{{route('line.card.get')}}";
         var __serv_card_save="{{route('line.card.store')}}";
         var __serv_user= "{{ Auth::user()->name }}";
       </script>
@@ -300,7 +299,7 @@
            },
            async mounted () {
              try {
-               window.gtag.event('open_template_form', { template_name: document.title })
+               //window.gtag.event('open_template_form', { template_name: document.title })
                window.backupVcard = JSON5.stringify(_.get(this, 'vcard', {}))
                this.loadVcard()
                await this.onloadVcard()
@@ -315,7 +314,7 @@
              shortcut () {
                const params = window.httpBuildQuery(_.mapValues(this.vcard, window.encodeBase64url))
                if (!_.isString(params) || !params.length) return
-               return `https://liff.line.me/1661414135-95aMGZzm/share.html?${params}`
+               return `https://liff.line.me/1661414135-95aMGZzm/share-json5gzip?${params}`
              },
            },
            methods: {
@@ -336,8 +335,13 @@
                 let type = this.paramBase64url('type')
                 if (!type) type=''
 
+                //get card template
                 let result = JSON5.parse(_.get(await axios.get(__serv_template, {
-                  params: { cachebust: Date.now(), template: template ,type: type},
+                  params: {
+                    cachebust: Date.now(),
+                    template: template,
+                    type: type
+                  },
                   transformResponse: [],
                 }), 'data'))
 
@@ -354,18 +358,26 @@
                 }
 
               }else{
+
                 //edit card
                 let result = JSON5.parse(_.get(await axios.get(__serv_card, {
-                  params: { cachebust: Date.now(), cardno: cardno},
+                  params: {
+                    cachebust: Date.now(),
+                    card: cardno
+                  },
                   transformResponse: [],
                 }), 'data'))
 
                 if(result.is_done=='T'){
-                  this.$set(this, 'vcard', { ...this.vcard, ...result.data })
-                  this.$set(this, 'cardno', { ...this.cardno, ...result.cardno })
-                  this.$set(this, 'subject', { ...this.subject, ...result.vcardsubject })
-                  this.$set(this, 'template', this.paramBase64url('template'))
-                  this.$set(this, 'type', this.paramBase64url('type'))
+                  let sample=JSON5.parse(result.data.sample)
+                  let id=result.data.id
+                  let subject=result.data.subject
+                  this.$set(this, 'vcard', sample)
+                  this.$set(this, 'cardno', id)
+                  this.$set(this, 'subject', subject)
+                  this.$set(this, 'template', 0)
+                  this.$set(this, 'type', 0)
+                  this.$set(this, 'link', "")
                 }
               }
              }, // abstract
@@ -377,7 +389,7 @@
              async btnReset (confirm = true) {
                try {
                  if (confirm) {
-                   window.gtag.event('reset_template_form', { template_name: document.title })
+                   //window.gtag.event('reset_template_form', { template_name: document.title })
                    confirm = await Swal.fire({
                      cancelButtonColor: '#3085d6',
                      cancelButtonText: '保持原樣',
@@ -430,18 +442,20 @@
                try {
                  const exported = await this.exportVcard()
                  this.exportimport.text = exported
-                 console.log(exported)
+                 //console.log(exported)
 
-                 await Promise.all([
+                 /*await Promise.all([
                  this.getTpl()
-               ])
-/*
+               ])*/
+
+                 /*
                  this.sample = this.getRenderedMsgs()
                  console.log(this.sample)*/
                  this.jqModal('modalExportImport', 'show')
                } catch (err) {
-                 window.logError({ err, fatal: true })
-                 await Swal.fire({ icon: 'error', title: '匯出失敗', text: err.message })
+                throw(err);
+                 //window.logError({ err, fatal: true })
+                 //await Swal.fire({ icon: 'error', title: '匯出失敗', text: err.message })
                }
              },
              async btnImport () {
@@ -462,9 +476,16 @@
               return base64 ? window.decodeBase64url(base64) : null
             }, 
             async getTpl () {
+
+               //new card
+               let template = this.paramBase64url('template')
+                if (!template) template=''
+
+                let type = this.paramBase64url('type')
+                if (!type) type=''
              
                  const render = _.template(_.get(await axios.get(__serv_template, {
-                   params: { cachebust: Date.now() },
+                   params: { cachebust: Date.now() ,template: template ,type: type} ,
                    transformResponse: [],
                  }), 'data'))
 
@@ -565,7 +586,6 @@
            ...cfg.computed,
            shortcut () {
              const params = window.httpBuildQuery({
-                template: window.encodeBase64url(this.link),
                 json5gzip: window.encodeGzip(JSON5.stringify(window.beautifyFlex(this.vcard.json5))),
              })
              if (!_.isString(params) || !params.length) return
@@ -680,4 +700,4 @@
          @endverbatim
       </script>
 
-</x-app-layout>
+@endsection

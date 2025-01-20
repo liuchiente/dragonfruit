@@ -27,7 +27,7 @@
                                 <form method="POST" action="{{ route('login') }}" class="user">
                                     <input type="hidden" name="_token" value="{{ csrf_token() }}">
 
-                                    <div class="form-group">
+                                   <!-- <div class="form-group">
                                         <input type="email" class="form-control form-control-user" name="email" placeholder="{{ __('E-Mail Address') }}" value="{{ old('email') }}" required autofocus>
                                     </div>
 
@@ -46,9 +46,17 @@
                                         <button type="submit" class="btn btn-primary btn-user btn-block">
                                             {{ __('Login') }}
                                         </button>
+                                    </div>-->
+
+                                    <div class="form-group">
+                                        <a type="button" class="btn btn-primary btn-line btn-user btn-block" href="{{ $line_login_url }}">
+                                            <i class="fab fa-line fa-fw"></i> {{ __('Login with Line') }}
+                                        </a>
                                     </div>
 
-                                    <hr>
+                                    <div class="text-center">
+                                    <h5 class="h4 text-gray-900 mb-4">我們目前只開放用Line帳號登入，希望您喜歡我們的服務。</h5>
+                                    </div>
 
                                     <!--<div class="form-group">
                                         <button type="button" class="btn btn-github btn-user btn-block">
@@ -72,7 +80,7 @@
                                 </form>
 
                                 <hr>
-
+                                <!--
                                 @if (Route::has('password.request'))
                                     <div class="text-center">
                                         <a class="small" href="{{ route('password.request') }}">
@@ -86,6 +94,7 @@
                                         <a class="small" href="{{ route('register') }}">{{ __('Create an Account!') }}</a>
                                     </div>
                                 @endif
+                                -->
                             </div>
                         </div>
                     </div>

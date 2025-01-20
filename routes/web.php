@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Line\LineCardController;
 
 
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -19,7 +20,8 @@ use App\Http\Controllers\Line\LineCardController;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->to('login');
+    //return view('welcome');
 });
 
 //line card share callback
@@ -29,6 +31,31 @@ Route::get('/endpoint', function () {
 
 Route::get('/endpoint/share-json5gzip', function () {
     return view('cano.liff-full.share-json5gzip');
+});
+
+Route::get('/endpoint/share-j5gz', function () {
+    return view('line.share-j5gz');
+});
+
+
+Route::get('/endpoint/binding', function () {
+    return view('line.binding');
+});
+
+Route::get('/endpoint/shop-products', function () {
+    return view('shop.products');
+});
+
+Route::get('/endpoint/shop-cart', function () {
+    return view('shop.cart');
+});
+
+Route::get('/endpoint/shop-product', function () {
+    return view('shop.product');
+});
+
+Route::get('/endpoint/shop-checkout', function () {
+    return view('shop.checkout');
 });
 
 require __DIR__.'/auth.php';

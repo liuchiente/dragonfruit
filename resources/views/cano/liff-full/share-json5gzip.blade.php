@@ -55,11 +55,11 @@
     @endverbatim
     
     @verbatim
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-GZZ1VHK5ZD"></script>
+   <!--<script async src="https://www.googletagmanager.com/gtag/js?id=G-GZZ1VHK5ZD"></script>-->
     @endverbatim
     
     @verbatim
-    <script>;(() => {
+   <!-- <script>;(() => {
          // initialize gtag
          window.dataLayer = window.dataLayer || []
          function gtag(){window.dataLayer.push(arguments)}
@@ -96,21 +96,21 @@
          
          window.gtag = gtag // expose gtag
          })()
-      </script>
+      </script>-->
       @endverbatim
 
       @verbatim
       <div class="container my-4 text-monospace" id="app" v-cloak v-show="!loading">
          <h3 class="my-3 text-center">{{ $t('title') }}</h3>
          <div class="form-group my-3"><button class="btn btn-lg btn-success btn-block d-flex justify-content-center align-items-center" type="button" @click="btnShare" :disabled="!msgs"><i class="fa mr-2 fa-share-square-o"></i> {{ $t('share.btn') }}</button><small class="form-text text-muted mt-2">{{ $t('share.help') }}</small></div>
-         <div class="form-group my-3"><button class="btn btn-lg btn-info btn-block d-flex justify-content-center align-items-center" type="button" @click="btnSend" :disabled="!msgs"><i class="fa mr-2 fa-paper-plane-o"></i> {{ $t('send.btn') }}</button><small class="form-text text-muted mt-2">{{ $t('send.help') }}</small></div>
+         <!--<div class="form-group my-3"><button class="btn btn-lg btn-info btn-block d-flex justify-content-center align-items-center" type="button" @click="btnSend" :disabled="!msgs"><i class="fa mr-2 fa-paper-plane-o"></i> {{ $t('send.btn') }}</button><small class="form-text text-muted mt-2">{{ $t('send.help') }}</small></div>
          <div class="form-group my-3">
             <div class="btn-group btn-group-lg w-100">
                <button class="btn btn-outline-secondary btn-block d-flex justify-content-center align-items-center" type="button" @click="btnCopy(linkLiffV2)"><i class="fa mr-2 fa-clipboard"></i> {{ $t('copy.btn') }}</button><button class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split" type="button" data-toggle="dropdown"></button>
                <div class="dropdown-menu dropdown-menu-right"><button class="dropdown-item" type="button" @click="btnCopy(linkLiffV1)">{{ $t('copy.btn') }} (LIFF v1)</button><button class="dropdown-item" type="button" @click="btnCopy(linkLihi)">{{ $t('copy.btn') }} (lihi1.com)</button></div>
             </div>
             <small class="form-text text-muted mt-2">{{ $t('copy.help') }}</small>
-         </div>
+         </div>-->
          <!--<div class="dropdown my-3">
             <button class="btn btn-lg btn-secondary btn-block dropdown-toggle" type="button" data-toggle="dropdown">{{ $t('dropdown.btn') }}</button>
             <div class="dropdown-menu"><a class="dropdown-item" target="_blank" href="https://line.me/R/nv/QRCodeReader"><i class="fa fa-fw fa-qrcode"></i> {{ $t('dropdown.qrcodeReader') }}</a><a class="dropdown-item" target="_blank" href="https://line.me/R/nv/addFriends"><i class="fa fa-fw fa-users"></i> {{ $t('dropdown.addFriends') }}</a><a class="dropdown-item" target="_blank" href="https://line.me/R/nv/keep"><i class="fa fa-fw fa-bookmark"></i> {{ $t('dropdown.keep') }}</a><a class="dropdown-item" target="_blank" href="https://cc.fruit/?openExternalBrowser=1"><i class="fa fa-fw fa-address-card"></i> {{ $t('dropdown.create') }}</a><a class="dropdown-item" target="_blank" href="https://lihi1.com/CVjIx/liffshare"><i class="fa fa-fw fa-comments"></i> {{ $t('dropdown.discuss') }}</a><button class="dropdown-item" type="button" @click="btnFriendMissing"><i class="fa fa-fw fa-question-circle"></i> {{ $t('dropdown.friendMissing') }}</button></div>
@@ -142,7 +142,12 @@
       <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/gh/PamornT/flex2html@main/js/flex2html.min.js"></script>
       <script src="{{ asset('/js/common.js') }}"></script>
 
-    @verbatim
+      <script>
+        var __serv_render="{{route('line.card.render.carousel1')}}";
+      </script>
+
+
+      @verbatim
      <script>
          const loginPromise = (async () => {
            await liff.init({ liffId: '1661414135-95aMGZzm' })
@@ -155,7 +160,7 @@
              window.logError({ err })
              return {}
            })
-           window.gtag.configUserId(profile.userId)
+           //window.gtag.configUserId(profile.userId)
            return profile
          })()
          window.vueConfig = {
@@ -167,7 +172,6 @@
              loading: true,
              msgs: null,
              profile: null,
-             render: null,
              vcard: null,
            },
            async mounted () {
@@ -177,10 +181,11 @@
                this.linkLiffV2 = liff.permanentLink.createUrl()
                this.setOtherLinksByLiffV2(this.linkLiffV2)
                await Promise.all([
-                 this.getTpl(),
-                 this.getVcard(),
+                  this.getRenderCard() 
+                  //this.getTpl(),
+                  //this.getVcard(),
                ])
-               this.msgs = this.getRenderedMsgs()
+               //this.msgs = this.getRenderedMsgs()
                for (const msg of this.msgs) {
                  window.flex2html('flex2html', msg)
                }
@@ -200,10 +205,28 @@
              },
            },
            methods: {
+            async getRenderCard () {
+               try {
+                const json5 = JSON5.parse(this.paramGzip('json5gzip'))          
+                if (!json5) throw new Error('json5gzip is required.')
+                
+                const payload=JSON.stringify({ vcard: json5 })
+                const card = _.get(await axios.post(__serv_render, payload,{
+                      headers: {
+                        'Content-Type': 'application/json'
+                      }}),"data")
+
+                this.msgs = _.castArray(card)
+               } catch (err) {
+                 err.message = `${this.$t('init.getTplFail')}${err.message ? ': ' + err.message : ''}`
+                 //this.render = null
+                 throw err
+               }
+             },
              async getTpl () {
                try {
-                const tpl = this.paramBase64url('template')
-                 if (!tpl) throw new Error('template is required.')
+
+                if (!tpl) throw new Error('template is required.')
                  const render = _.template(_.get(await axios.get(tpl, {
                    params: { cachebust: Date.now() },
                    transformResponse: [],
@@ -214,7 +237,7 @@
                  const { profile = {} } = this
          
                  // generate fake page_view for template_impression
-                 const baks = _.fromPairs(await Promise.all(['client_id', 'session_id', 'user_id'], async k => {
+                 /*const baks = _.fromPairs(await Promise.all(['client_id', 'session_id', 'user_id'], async k => {
                    const val = await new Promise(resolve, gtag('get', gtag.id, k, resolve))
                    return [k, val]
                  }))
@@ -228,12 +251,12 @@
                    session_id: gtagSessionId,
                    user_id: null,
                  })
-                 gtag('config', gtag.id, baks)
+                 gtag('config', gtag.id, baks)*/
          
-                 this.render = options => render({ gtagClientId, gtagSessionId, liffLink, profile, ...options })
+                 //this.render = options => render({ gtagClientId, gtagSessionId, liffLink, profile, ...options })
                } catch (err) {
                  err.message = `${this.$t('init.getTplFail')}${err.message ? ': ' + err.message : ''}`
-                 this.render = null
+                 //this.render = null
                  throw err
                }
              },
@@ -249,7 +272,7 @@
              async btnShare (slient = false) {
                try {
                  this.showLoading(this.$t('wait'), this.$t('share.loading'))
-                 window.gtag.event('template_share', { method: 'liff_share', template_url: this.vcard.template })
+                 //window.gtag.event('template_share', { method: 'liff_share', template_url: this.vcard.template })
                  if (!liff.isApiAvailable('shareTargetPicker')) throw new Error(this.$t('share.unsupported'))
                  const beforeShare = Date.now()
                  const res = await liff.shareTargetPicker(this.msgs)
@@ -270,7 +293,7 @@
              async btnSend () {
                try {
                  this.showLoading(this.$t('wait'), this.$t('send.loading'))
-                 window.gtag.event('template_share', { method: 'liff_send', template_url: this.vcard.template })
+                 //window.gtag.event('template_share', { method: 'liff_send', template_url: this.vcard.template })
                  if (!this.canSendMessages()) throw new Error(this.$t('send.unsupported'))
                  await liff.sendMessages(this.msgs)
                  await this.swalFire({ icon: 'success', title: this.$t('send.success') })
@@ -281,7 +304,7 @@
                }
              },
              async btnCopy (text, container = null) {
-               window.gtag.event('clipboard_copy', { content_type: 'text', text: _.truncate(text, { length: 30, omission: '' }) })
+               //window.gtag.event('clipboard_copy', { content_type: 'text', text: _.truncate(text, { length: 30, omission: '' }) })
                if (!container) container = document.body
                const dom = document.createElement('textarea')
                dom.value = text
@@ -483,7 +506,7 @@
                this.vcard = window.parseJsonOrDefault(this.paramGzip('json5gzip'), {})
              } catch (err) {
                err.message = `${this.$t('csv.getVcardFail')}${err.message ? ': ' + err.message : ''}`
-               this.render = null
+               //this.render = null
                throw err
              }
            },

@@ -13,7 +13,11 @@ use Illuminate\Support\Facades\Route;
 
 
 use App\Http\Controllers\Line\NotifyDataController;
+use App\Http\Controllers\Line\NotifyController;
 use App\Http\Controllers\Line\LoginController;
+use App\Http\Controllers\Line\LineCardController;
+use App\Http\Controllers\Line\LineCardRenderController;
+
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\HomeController;
@@ -31,11 +35,11 @@ Route::middleware('guest')->group(function () {
 });
 
 
-/*Route::middleware('guest')->group(function () {
-    //Line Login
-    Route::get('login', [LoginController::class,'pageLine'])->name('login');
+//Line Login
+Route::middleware('guest')->group(function () {
+    //Route::get('login', [LoginController::class,'pageLine'])->name('login');
     Route::get('callback/linelogin', [LoginController::class,'lineLoginCallBack']);
-});*/
+});
 
 
 Route::middleware('auth')->group(function () {
@@ -50,11 +54,13 @@ Route::middleware('auth')->group(function () {
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
     //Line Notify
-    Route::get('add-notify-channel', [NotifyDataController::class, 'getOneChannel'])->name('notify.token.add');
+    Route::get('add-notify-channel', [NotifyController::class, 'addOneChannel'])->name('notify.token.add');
     Route::get('edit-notify-channel', [NotifyDataController::class, 'getOneChannel'])->name('notify.token.edit');
     Route::post('save-notify-channel', [NotifyDataController::class, 'saveOneChannel'])->name('notify.token.save');
     Route::get('show-notify-channel', [NotifyDataController::class, 'getManyChannel'])->name('notify.token.show');
     //Route::post('share-notify-channel', [NotifyDataController::class, 'saveOneChannel'])->name('notify.token.show');
+    Route::get('callback/notify-channel', [NotifyController::class, 'lineNotifyCallBack'])->name('notify.token.callback');
+
 
     Route::get('add-notify-template', [NotifyDataController::class, 'addOneTemplate'])->name('notify.template.add');
     Route::get('edit-notify-template', [NotifyDataController::class, 'getOneTemplate'])->name('notify.template.edit');
@@ -82,9 +88,15 @@ Route::middleware('auth')->group(function () {
     Route::get('card', [LineCardController::class,'card'])->name('line.card.get');
     Route::post('card', [LineCardController::class,'cardStore'])->name('line.card.store');
 
+    Route::post('share-card', [LineCardController::class,'shareCard'])->name('line.shared.store');
+    Route::get('share-card', [LineCardController::class,'shareCardsShow'])->name('line.shared.get');
+
     //多頁訊息模板
     Route::get('/designer/carousel-1', [LineCardController::class,'carousel1'])->name('line.card.carousel1');
     Route::get('/designer/cv-1', [LineCardController::class,'cv1'])->name('line.card.cv1');
+
+    Route::post('/endpoint/carousel1-render', [LineCardRenderController::class,'render'])->name('line.card.render.carousel1');
+    
 
 });
 

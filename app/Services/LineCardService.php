@@ -51,6 +51,9 @@ class LineCardService
         return $templates;
     }
 
+    /**
+     * Line 卡片設計器模板
+     */
     public function getTemplate($query){
         $result=[];
         $query['template']=!isset($query['template'])||$query['template']==""?0:$query['template'];
@@ -66,17 +69,24 @@ class LineCardService
         return $result;
     }
 
-    public function getCard($query,$user){
+    /**
+     * Line 卡片
+     */
+    public function getCard($query){
         $result['id']=0;
         $result['content']="";
-        
-        $query['cano']=!isset($query['cano'])||$query['cano']==""?0:$query['cano'];
-        $linecard=LineCard::where("id",$query['cano'])->where("user_id",$user->id)->first();
+
+        $linecard=LineCard::where("id",$query['card_no'])->where("user_id",$query['user_id'])->first();
         $result['id']=$linecard->id;
-        $result['content']=$linecard->content;
+        $result['sample']=$linecard->template;
+        $result['subject']=$linecard->subject;
+        
         return $result;
     }
 
+    /**
+     * 取得會員的所有卡片
+     */
     public function getCards($query,$user){
         $cards=LineCard::select('line_cards.*','line_card_templates.type','line_card_templates.model')->join('line_card_templates', 'line_cards.template_id', '=', 'line_card_templates.id')
         ->where("line_cards.user_id",$user->id)->get();
@@ -85,6 +95,26 @@ class LineCardService
             $asset->model_name=isset(self::_MODEL[$asset->model])?self::_MODEL[$asset->model]:"";
             $asset->type_name=isset(self::_TYPE[$asset->type])?self::_TYPE[$asset->type]:"";
             $asset->designer=$this->getDesigner($asset->type)."?cardno=$cardno";
+            $asset->cardno=$this->getBase64Encode($asset->id);
+            return $asset;
+        });
+        return $cards;
+    }
+
+    /**
+     * 取得所有會員已經共享的卡片
+     */
+    public function getSharedCards($query,$user){
+        $cards=LineCard::select('line_cards.*','line_card_templates.type','line_card_templates.model','users.name')->join('line_card_templates', 'line_cards.template_id', '=', 'line_card_templates.id')
+        ->join('users', 'line_cards.user_id', '=', 'users.id')
+        ->where("line_cards.shared",1)->get();
+        $cards->map(function ($asset) {
+            $cardno=$this->getBase64Encode($asset->id);
+            $asset->model_name=isset(self::_MODEL[$asset->model])?self::_MODEL[$asset->model]:"";
+            $asset->type_name=isset(self::_TYPE[$asset->type])?self::_TYPE[$asset->type]:"";
+            $asset->designer=$this->getDesigner($asset->type)."?cardno=$cardno";
+            $asset->cardno=$this->getBase64Encode($asset->id);
+            $asset->user_name=$asset->name;
             return $asset;
         });
         return $cards;
@@ -101,11 +131,14 @@ class LineCardService
         }else{
             $lineCard=new LineCard();
         }
-        $lineCard->template_id=$card['template'];
-        $lineCard->suject=$card['subject'];
+        //$lineCard->template_id=$card['template'];
+        $lineCard->subject=$card['subject'];
         $lineCard->content =$card['exports'];
         $lineCard->shared=0;
         $lineCard->user_id=$user->id;
+        $lineCard->group_id=0;
+        $lineCard->msg_type=0;
+        
         $lineCard->save();
 
         $result['cardno']=$lineCard->id;
@@ -113,7 +146,7 @@ class LineCardService
     }
 
      /**
-     * 刪除個人卡片設定
+     * 刪除個人卡片
      */
     public function removeCards($card,$user){
         $userId=1;
@@ -129,5 +162,26 @@ class LineCardService
         }
         return $work;
     }
+
+
+    /**
+     * 分享卡片
+     * 傳入卡片代號、使用者代號找到對應的卡片
+     */
+    public function shareCardStore($param,$user){
+        $result=[];
+        $result["done"]=false;
+        if(isset($param['card'])&&$param['card']!=""&&$param['card']!="0"){
+            $share=isset($param['share'])&&$param['share']==true?1:0;
+            $lineCard=LineCard::where("id",$param['card'],)->where("user_id",$user->id)->first();
+            if($lineCard!=null){
+                $lineCard->share=$share;
+                $lineCard->save();
+                $result["done"]=true;
+            }
+        }
+        return $result;
+    }
+    
 
 }

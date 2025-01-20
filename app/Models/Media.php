@@ -7,5 +7,22 @@ use Illuminate\Database\Eloquent\Model;
 
 class Media extends Model
 {
+    protected $table="media";
     use HasFactory;
+
+    /*
+    id
+    publisher_from
+    publisher
+    subject
+    content
+    link
+    link_o
+    id_o
+    publisher_o
+    publish_at
+    created_at
+    updated_at
+    */
+    
 }

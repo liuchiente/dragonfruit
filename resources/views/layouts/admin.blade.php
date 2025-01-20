@@ -23,6 +23,13 @@
     <link href="{{ asset('vendor/sb-admin-2/img/favicon.png') }}" rel="icon" type="image/png">
 
     @vite(['resources/sass/app.scss','resources/js/app.js'])
+
+    <!-- Scripts -->
+    <script src="{{ asset('vendor/bootstrap/js/bootstrap.min.js') }}" type="module"></script>
+
+    <!-- Scripts -->
+    <script src="{{ asset('vendor/sb-admin-2/sb-admin-2.min.js') }}" type="module"></script>
+
 </head>
 <body id="page-top">
 
@@ -272,7 +279,6 @@
         </div>
     </div>
 </div>
-<!-- Scripts -->
-<script src="{{ asset('vendor/sb-admin-2/sb-admin-2.min.js') }}" type="module"></script>
+
 </body>
 </html>

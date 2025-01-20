@@ -109,7 +109,7 @@ class NotifyDataController extends Controller
 
         $user=Auth::user();
         $scheduleService=new ScheduleService();
-        $paramScheduler=collect($request->only(['scheduler','scheduler_cron']))->merge(['target'=>' App\Services\LineNotifyMessageService']);
+        $paramScheduler=collect($request->only(['scheduler','scheduler_cron']))->merge(['target'=>'App\Services\LineNotifyMessageService']);
         
         $scheduler=$scheduleService->saveOrUpdateSchedule($paramScheduler);
         

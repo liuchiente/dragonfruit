@@ -30,7 +30,7 @@
                     <label for="channel">發送頻道</label>
                     <select class="form-control" id="channel" name="channel" readonly required>
                     @foreach($channels as $channel)
-                        <option value="{{$channel->id}}">{{$channel->chi_title}}</option>
+                        <option value="{{$channel->id}}">{{$channel->chl_title}}</option>
                     @endforeach
                     </select>
                 </div>

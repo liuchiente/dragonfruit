@@ -6,7 +6,7 @@
             <div class="sidebar-brand-icon rotate-n-15">
                 <i class="fas fa-laugh-wink"></i>
             </div>
-            <div class="sidebar-brand-text mx-3">RuRu 將 <sup>2</sup></div>
+            <div class="sidebar-brand-text mx-3">Ru<sup>2</sup>將</div>
         </a>
 
         <!-- Divider -->
@@ -42,7 +42,6 @@
                 <span>{{ __('Line Notify Templates') }}</span>
             </a>
         </li>
-
         
         <!-- Nav Item - Line Notify Messages -->
         <li class="nav-item {{ Nav::isRoute('notify.message.show') }}">
@@ -51,7 +50,36 @@
                 <span>{{ __('Line Notify Messages') }}</span>
             </a>
         </li>
+        
 
+        <!-- Heading -->
+        <div class="sidebar-heading">
+            {{ __('Line Card Designer') }}
+        </div>
+
+         <!-- Nav Item - New Cards -->
+         <li class="nav-item {{ Nav::isRoute('line.templates.get') }}">
+            <a class="nav-link" href="{{ route('line.templates.get') }}">
+                <i class="fas fa-fw fa-pen"></i>
+                <span>{{__('New Line Card')}}</span>
+            </a>
+        </li>
+
+        <!-- Nav Item - Line Cards -->
+        <li class="nav-item {{ Nav::isRoute('line.cards.get') }}">
+            <a class="nav-link" href="{{ route('line.cards.get') }}">
+                <i class="fas fa-fw fa-address-card"></i>
+                <span>{{__('My Line Cards')}}</span>
+            </a>
+        </li>
+
+        <!-- Nav Item - Line Cards -->
+        <li class="nav-item {{ Nav::isRoute('line.shared.get') }}">
+            <a class="nav-link" href="{{ route('line.shared.get') }}">
+                <i class="fas fa-fw fa-address-card"></i>
+                <span>{{__('Shared Line Cards')}}</span>
+            </a>
+        </li>
 
         <!-- Divider -->
         <hr class="sidebar-divider">

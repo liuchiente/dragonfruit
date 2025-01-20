@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 
+use Carbon\Carbon;
+
 use App\Providers\RouteServiceProvider;
 
 use Exception;
@@ -24,10 +26,10 @@ class NotifyController extends Controller
         $this->linenotifyService = $linenotifyService;
     }
 
-    public function pageLine()
+    public function addOneChannel()
     {
         $url = $this->linenotifyService->getSeriveRegisterBaseUrl();
-        return view('line.login')->with('url', $url);
+        return redirect($url);
     }
 
     public function lineNotifyCallBack(Request $request)
@@ -38,7 +40,7 @@ class NotifyController extends Controller
                 throw new Exception($request->all());
             }
             $code = $request->input('code', '');
-            $response = $this->linenotifyService->getLineToken($code);
+            $response = $this->linenotifyService->getLineNotifyToken($code);
 
             //Line Notify Token
             $token=$response['access_token'];
@@ -51,7 +53,10 @@ class NotifyController extends Controller
             }
 
             $lineNotifyToken->user_id=$user_id;
+            $lineNotifyToken->chl_id=Carbon::now()->timestamp;;
             $lineNotifyToken->chl_tag=$token;
+            $lineNotifyToken->chl_title='';
+            $lineNotifyToken->chl_type=1;
             $lineNotifyToken->save();
             //儲存到資料庫
             

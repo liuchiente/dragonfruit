@@ -36,10 +36,10 @@ class LineNotifyService
         $seed= Str::random(64);
         session(['line_seed' => $seed]);
         // 組成 Line Login Url
-        $url = config('line.authorize_base_url') . '?';
+        $url = config('line.bot_notify_base_url') . '?';
         $url .= 'response_type=code';
-        $url .= '&client_id=' . config('line.channel_id');
-        $url .= '&redirect_uri=' . config('app.url') . '/callback/linenotify';
+        $url .= '&client_id=' . config('line.line_notify_client');
+        $url .= '&redirect_uri=' . config('app.url') . '/callback/notify-channel';
         $url .= '&state='.$seed; // 暫時固定方便測試
         $url .= '&scope=notify';
         return $url;
@@ -48,13 +48,13 @@ class LineNotifyService
     public function getLineNotifyToken($code)
     {
         $client = new Client();
-        $response = $client->request('POST', config('line.get_token_url'), [
+        $response = $client->request('POST', config('line.get_bot_notify_token_url'), [
             'form_params' => [
                 'grant_type' => 'authorization_code',
                 'code' => $code,
-                'redirect_uri' => config('app.url') . '/callback/linenotify',
-                'client_id' => config('line.channel_id'),
-                'client_secret' => config('line.secret')
+                'redirect_uri' => config('app.url') . '/callback/notify-channel',
+                'client_id' => config('line.line_notify_client'),
+                'client_secret' => config('line.line_notify_secret')
             ]
         ]);
         return json_decode($response->getBody()->getContents(), true);
@@ -67,10 +67,11 @@ class LineNotifyService
     public static function sendLineNotifyMessage(){
 		$messages = DB::table('line_notify_message')
                 ->select('line_notify_message.msg_id', 'line_notify_message.msg_title', 'line_notify_message.msg_context', 'line_notify_message.plan_id', 'line_notify_message.chl_id','line_notify_channel.chl_tag')
-				->join('line_notify_channel', 'line_notify_message.chl_id', '=', 'line_notify_channel.chl_id')
+				->join('line_notify_channel', 'line_notify_message.chl_id', '=', 'line_notify_channel.id')
                 ->where('line_notify_channel.chl_status','=',1)
 				->where('line_notify_message.msg_status','=',1)
-				->where('line_notify_message.send_at','<=',DB::raw('now()'))
+				->where('line_notify_message.send_at','<=',Carbon::now())
+				->whereNull('line_notify_message.sent_at')
                 ->get();
 		$eng=curl_init();
 		for($i=0;$i<count($messages);$i++){
@@ -111,11 +112,11 @@ class LineNotifyService
 		  } else {
 			$respose=json_decode($receive,true);
 			if(isset($respose['status'])&&($respose['status']=='200'||$respose['status']==200)){
-				DB::table('message')->where('msg_id', $message->msg_id)
-				->update(['msg_status' => 2,'d_upd'=> DB::raw('now()'),'d_sent'=> DB::raw('now()')]);
+				DB::table('line_notify_message')->where('msg_id', $message->msg_id)
+				->update(['msg_status' => 2,'updated_at'=> Carbon::now(),'sent_at'=> Carbon::now()]);
 			}else{
-				DB::table('message')->where('msg_id', $message->msg_id)
-				->update(['msg_status' => 0,'d_upd'=> DB::raw('now()'),'d_sent'=> DB::raw('now()'),'comment'=>$receive]);
+				DB::table('line_notify_message')->where('msg_id', $message->msg_id)
+				->update(['msg_status' => 0,'updated_at'=> Carbon::now(),'sent_at'=> Carbon::now(),'comment'=>$receive]);
 			}
 		  }
         return;
@@ -197,7 +198,7 @@ class LineNotifyService
     }
 
 	public function getManyLineNotifyMessage($param){
-		$lineNotifyMessage=LineNotifyMessage::join('line_notify_channel', 'line_notify_channel.chl_id', '=', 'line_notify_message.chl_id')->where('line_notify_channel.user_id',$param['user_id'])->get();
+		$lineNotifyMessage=LineNotifyMessage::join('line_notify_channel', 'line_notify_channel.id', '=', 'line_notify_message.chl_id')->where('line_notify_channel.user_id',$param['user_id'])->get();
         return $lineNotifyMessage;
     }
 

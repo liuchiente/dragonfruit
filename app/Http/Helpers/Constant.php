@@ -2,11 +2,13 @@
 
 namespace App\Http\Helpers;
 
+use Carbon\Carbon;
+
 
 class Constant
 {
     public static function now() {
-        return time();
+        return Carbon::now();
     }
 
     public static function zero() {

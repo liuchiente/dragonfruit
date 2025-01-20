@@ -4,12 +4,12 @@
     <link href="{{ asset('vendor/datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/1.2.4/css/buttons.jqueryui.css" />
    <!-- Page Heading -->
-    <h1 class="h3 mb-2 text-gray-800">{{ __('Line Notify Channels') }}</h1>
+    <h1 class="h3 mb-2 text-gray-800">{{ __('Line Notify Messages') }}</h1>
     <p class="mb-4"></p>
     <div class="card shadow mb-4">
 
         <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">{{ __('Line Notify Channels') }}</h6>
+            <h6 class="m-0 font-weight-bold text-primary">{{ __('Line Notify Messages') }}</h6>
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -30,13 +30,12 @@
                         @foreach($messages as $message)
                         <tr>
                             <td>{{ $loop->index }}</td>
-                            <td><a href="{{route('notify.token.edit',['message' => $message->id])}}">{{$message->chl_id}}</a></td>
-                            <td>{{$channel->msg_title}}</td>
-                            <td>{{$channel->msg_context}}</td>
-                            <td>{{$channel->chl_status}}</td>
-                            <td>{{$channel->created_at}}</td>
-                            <td>{{$channel->send_at}}</td>
-                            <td>{{$channel->sent_at}}</td>
+                            <td>{{$message->msg_title}}</td>
+                            <td>{{$message->msg_context}}</td>
+                            <td>{{$message->chl_status}}</td>
+                            <td>{{$message->created_at}}</td>
+                            <td>{{$message->send_at}}</td>
+                            <td>{{$message->sent_at}}</td>
                         </tr>
                         @endforeach
                     </tbody>
