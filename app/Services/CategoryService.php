@@ -53,22 +53,27 @@ class CategoryService
     }
 
 
-    private function assembleCategories($categories,$categoriesArray = [])
-    {
-        $categoriesMap = $categories->keyBy('id');
+    private function assembleCategories($categories)
+{
+    $categoriesArray = [];
+    $categoriesMap = $categories->keyBy('id');
 
-        foreach ($categories as $category) {
-            // 將最上層的類別加入主陣列
-            if ($category->id_p == 0) {
-                $categoriesArray[$category->id] = $this->formatCategory($category);
-            } 
+    foreach ($categories as $category) {
+        // 將最上層的類別加入主陣列
+        if ($category->id_p == 0) {
+            $categoriesArray[$category->id] = $this->formatCategory($category);
+        } else {
+            // 使用輔助函數添加子類別
+            $this->addCategoryToParent($categoriesArray, $category);
         }
-
-        return array_values($categoriesArray);
     }
+
+    return array_values($categoriesArray);
+}
 
 private function addCategoryToParent(&$categoriesArray, $category)
 {
+    var_dump( $category);
     $parentId = $category->id_p;
 
     // 如果父類別存在，則將類別添加到其子類別中

@@ -70,7 +70,7 @@ return [
     |
     */
 
-    'timezone' => 'Asia/Taipei',
+    'timezone' => 'UTC',
 
     /*
     |--------------------------------------------------------------------------
@@ -183,7 +183,6 @@ return [
 
     'aliases' => Facade::defaultAliases()->merge([
         // 'Example' => App\Facades\Example::class,
-         'Constant'=> App\Http\Helpers\Constant::class
     ])->toArray(),
 
 ];

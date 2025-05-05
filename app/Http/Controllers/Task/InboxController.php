@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers\Task;
 
-use App\Http\Controllers\Controller;
-use App\Models\Inbox;
-use App\Models\Comment;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Exception;
+
+use App\Http\Controllers\Controller;
+use App\Services\InboxService;
+use App\Models\Inbox;
+use App\Models\User;
 
 class InboxController extends Controller
 {
@@ -18,32 +19,13 @@ class InboxController extends Controller
     {
         try {
             $user = Auth::user();
-
-            $inboxs = Inbox::where('user_id', $user->id)
-                ->with(['comments', 'user.profile']) // Load related comments and user
-                ->get();
-
-            if ($inboxs->isEmpty()) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'No messages found'
-                ], 404);
-            }
-
-             $inbox_o=[];
-            // 获取参与者
-            foreach ($inboxs as $inbox) {
-                $user_profile= $inbox->user->profile;
-
-                $inbox_arr=$inbox->toArray();
-                $inbox_arr['user'] =  $user_profile;
-                $inbox_o[]= $inbox_arr;
-            }
+            $inboxService=new InboxService();
+            $inbox=$inboxService->getInbox($user);
 
             return response()->json([
                 'status' => true,
                 'message' => 'List of messages',
-                'data' => $inbox_o
+                'data' => $inbox
             ], 200);
         } catch (Exception $e) {
            // throw  $e;
@@ -60,21 +42,15 @@ class InboxController extends Controller
     {
         try {
    
-            $comments = Comment::where('inboxId', $inboxId)
-                ->with('user') // Load the user who created the comment
-                ->get();
+            $user = Auth::user();
 
-            if ($comments->isEmpty()) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'No comments found',
-                ], 404);
-            }
+            $inboxService=new InboxService();
+            $inboxComments=$inboxService->getInboxComment($user, $inboxId);
 
             return response()->json([
                 'status' => true,
                 'message' => 'List of comments for inbox',
-                'data' => $comments
+                'data' => $inboxComments
             ], 200);
         } catch (Exception $e) {
             Log::error($e->getMessage());
@@ -89,9 +65,10 @@ class InboxController extends Controller
     public function createInbox(Request $request)
     {
         try {
-
+            $user = Auth::user();
             $requestData = $request->all();
-            $inbox = Inbox::create($requestData);
+            $inboxService=new InboxService();
+            $inbox = $inboxService->addInbox($requestData,$user);
 
             return response()->json([
                 'status' => true,
@@ -109,17 +86,18 @@ class InboxController extends Controller
     }
 
     // Create a new inbox message
-    public function createUserInboxComment(Request $request)
+    public function createUserInboxComment(Request $request, $inboxId)
     {
         try {
-
+            $user = Auth::user();
             $requestData = $request->all();
-            $inbox = Inbox::create($requestData);
+            $inboxService=new InboxService();
+            $comment=$inboxService->addInboxComment($requestData,$user,$inboxId);
 
             return response()->json([
                 'status' => true,
                 'message' => 'Message created successfully!',
-                'data' => $inbox
+                'data' => $comment
             ], 201);
 
         } catch (Exception $e) {

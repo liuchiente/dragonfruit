@@ -23,6 +23,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'organization_id'
     ];
 
     /**
@@ -54,5 +55,21 @@ class User extends Authenticatable
         return $this->hasMany(UserProfile::class, 'user_id');
     }
 
+    public function tokens()
+    {
+        return $this->hasMany(UserToken::class, 'user_id');
+    }
+
+    public function ownInbox()
+    {
+        return $this->hasMany(Inbox::class, 'user_id');
+    }
+
+    public function inboxes()
+    {
+        return $this->belongsToMany(Inbox::class, 'inbox_user', 'user_id', 'inbox_id');
+    }
+
+    
 
 }

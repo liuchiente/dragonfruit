@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use App\Models\Employee;
 use App\Models\User;
 use App\Models\UserProfile;
+use App\Models\Organization;
 
 class EmployeeService
 {
@@ -22,10 +23,14 @@ class EmployeeService
      * @param string $userPassword 用戶密碼
      * @return mixed
      */
-    public function loginWithEmployee($userAccount, $userPassword)
+    public function loginWithEmployee($userAccount, $userPassword, $organization)
     {
+
+        $organization=Organization::where('code',$organization)->first();
+        $organization=$organization==null?Organization::first():$organization;
+
+        //fonlee login API
         $url = 'https://www.fonlee.com.tw/app/wrapper/transfer_employee.php';
-        
         // 發送 POST 請求
         $response = Http::withHeaders([
             'Content-Type' => 'application/x-www-form-urlencoded',
@@ -41,7 +46,6 @@ class EmployeeService
 
         // 去除 HTML 標籤
         $cleanString = strip_tags($response->body());
-
         // 嘗試將字串轉換為 JSON 物件
         $data = json_decode($cleanString, true);
 
@@ -51,9 +55,9 @@ class EmployeeService
             $data = $response->json();
 
             // 更新或儲存用戶數據
-            $user=$this->updateUser($data['pack']);
-            $this->updateUserProfiles($data['pack'],$user);
-            $this->updateUserEmployee($data,$userPassword,$user);
+            $user=$this->updateUser($data['pack'],$organization);
+            $userprofile=$this->updateUserProfiles($data['pack'],$user,$organization);
+            $this->updateUserEmployee($data,$userPassword,$userprofile);
             
             return $user; // 返回處理後的數據
         } else {
@@ -62,23 +66,25 @@ class EmployeeService
         }
     }
 
+
+
     /**
      * 更新或儲存用戶資料
      *
      * @param array $userData 用戶資料
      * @return void
      */
-    protected function updateUserEmployee($userData,$pass,$user)
+    protected function updateUserEmployee($userData,$pass,$userprofile)
     {
         // 嘗試找到對應的用戶
-        $user = Employee::updateOrCreate(
+        $employee = Employee::updateOrCreate(
             [
                 'emp_account' => $userData['pack']['userAccount'],
                 'emp_no' => $userData['pack']['staffCode']
             ], // 假設 'user_account' 是唯一識別
             [
                 'emp_password' => $pass,
-                'user_id' =>$user->id,
+                'user_profile_id' =>$userprofile->id,
                 'emp_id' => $userData['pack']['userID'],
                 'emp_name' => $userData['pack']['username'],
                 'email' => $userData['pack']['email'],
@@ -97,19 +103,19 @@ class EmployeeService
      * @param array $userData 用戶資料
      * @return void
      */
-    protected function updateUserProfiles($userData,$user)
+    protected function updateUserProfiles($userData,$user,$organization)
     {
       
-        $team='Employee';
-        if($userData['IDRep']=='E'){
-            $team='Engering';
+        $team='employee';
+        if($userData['identity']=='E'){
+            $team='employee';
         }
         $uuid=$this->generateUnique128Char();
-        // 嘗試找到對應的用戶
-        $user = UserProfile::updateOrCreate(
+        // 嘗試找到對應的用戶,依照對應組織建立一個身份
+        $userProfile = UserProfile::updateOrCreate(
             [
                 'user_id' => $user->id,
-                'organization_id'=>$user->organization_id,
+                'organization_id'=>$organization->id,
                 'team'=> $team
             ], // 假設 'user_id' 是唯一識別
             [
@@ -118,6 +124,7 @@ class EmployeeService
                 'uid' =>$uuid
             ]
         );
+        return $userProfile;
     }
 
     /**
@@ -126,9 +133,9 @@ class EmployeeService
      * @param array $userData 用戶資料
      * @return void
      */
-    protected function updateUser($userData)
+    protected function updateUser($userData,$organization)
     {
-        // 嘗試找到對應的用戶
+        // 嘗試找到對應的用戶,更新預設組織
         return $user = User::updateOrCreate(
             [
                 'email' => $userData['email'], // 假設 'email' 是唯一識別
@@ -136,6 +143,7 @@ class EmployeeService
             ], 
             [
                 'name' => $userData['username'],
+                'organization_id' => $organization->id,
                 'password' => Crypt::encryptString($userData['email']),
             ]
         );

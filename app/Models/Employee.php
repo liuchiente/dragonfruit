@@ -15,6 +15,7 @@ class Employee extends Model
         'emp_account',
         'emp_no',
         'emp_id',
+        'user_profile_id',
         'emp_password',
         'emp_name',
         'user_id',
@@ -26,5 +27,10 @@ class Employee extends Model
         'login_key'
     ];
 
+      // 設置與 User 的關聯
+      public function user()
+      {
+          return $this->belongsTo(User::class);
+      }
 }
 

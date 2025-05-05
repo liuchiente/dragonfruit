@@ -1,8 +1,6 @@
 <?php
+//use Illuminate\Support\Facades\Schedule;
 
-use Illuminate\Foundation\Inspiring;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Schedule;
 /*
 |--------------------------------------------------------------------------
 | Console Routes
@@ -14,9 +12,11 @@ use Illuminate\Support\Facades\Schedule;
 |
 */
 
-Artisan::command('inspire', function () {
-    $this->comment(Inspiring::quote());
-})->purpose('Display an inspiring quote');
+use Illuminate\Console\Scheduling\Schedule;
 
-//Schedule::command('gen:message')->everyMinute()->withoutOverlapping();
-//Schedule::command('send:linenotify')->everyMinute()->withoutOverlapping();
+return function (Schedule $schedule) {
+ $schedule->command('app:background-scheduler')->cron('* * * * *')->withoutOverlapping();
+ $schedule->command('app:send-line-notify-message')->cron('*/10 * * * *')->withoutOverlapping();
+ $schedule->command('app:send-firebase-message')->cron('*/10 * * * *')->withoutOverlapping();
+ $schedule->command('app:generate-notification-message')->cron('* * * * *')->withoutOverlapping();
+};

@@ -112,9 +112,7 @@ class TaskController extends Controller
                 ], 404);
             }
 
-            $task_o=[];
-            // 获取参与者
-            foreach ($tasks as &$task) {
+           $taskr=$tasks->map(function ($task) use($organizationId){
                 $participants = [];
                 foreach ($task->assignees as $assigneeId) {
                     $userprofile = UserProfile::where('user_id',$assigneeId)->where('organization_id',$organizationId)->first();
@@ -126,13 +124,14 @@ class TaskController extends Controller
                 $user_profile= $task->creator->profile;
                 $task_arr=$task->toArray();
                 $task_arr['creator'] =  $user_profile;
-                $task_o[]= $task_arr;
-            }
+                $task_arr['forms'] =  $task->forms->toArray();
+                return $task_arr;
+            });
 
             return response()->json([
                 'status' => true,
                 'message' => 'List of tasks for Organization',
-                'data' => $task_o,
+                'data' => $taskr,
             ], 200);
         } catch (\Exception $e) {
             return response()->json([

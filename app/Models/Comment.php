@@ -20,11 +20,13 @@ class Comment extends Model
         'type',
         'action',
         'inbox_id',
+        'attaches',
     ];
 
     // 如果 like 欄位是 JSON 或 array 資料格式，這裡設置它的 cast
     protected $casts = [
         'like' => 'array', // 這會將 like 欄位轉換為 PHP array
+        'attaches'=> 'array'
     ];
 
     // 定義關聯 (如果有必要)

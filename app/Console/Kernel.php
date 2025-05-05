@@ -12,8 +12,10 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->command('app:background-scheduler')->cron('* * * * *');;
-        $schedule->command('app:send-line-notify-message')->cron('* * * * *');;
+        $schedule->command('app:background-scheduler')->cron('* * * * *');
+        $schedule->command('app:send-line-notify-message')->cron('* * * * *');
+        $schedule->command('app:send-firebase-message')->cron('* * * * *');
+        $schedule->command('app:generate-notification-message')->cron('* * * * *');
     }
 
     /**

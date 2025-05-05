@@ -30,7 +30,19 @@ class UserProfile extends Model
         return $this->belongsTo(User::class);
     }
 
+
+     // 設置與 User 的關聯
+     public function empolyee()
+     {
+         return $this->belongsTo(Employee::class);
+     }
+
     // 如果資料表有時間戳欄位 (created_at, updated_at)，Laravel 預設會自動處理
     public $timestamps = true;
+
+    public function organization()
+    {
+        return $this->belongsTo(Organization::class, 'organization_id');
+    }
 
 }

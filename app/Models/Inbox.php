@@ -23,25 +23,34 @@ class Inbox extends Model
         'like',
         'type',
         'action',
+        'queue_at'
     ];
 
     // 定義資料型態轉換，尤其是 JSON 格式的欄位 (如 'like')
     protected $casts = [
         'like' => 'array', // 將 'like' 欄位轉為 PHP array (假設 'like' 儲存為 JSON)
         'due_date' => 'datetime', // 確保 'due_date' 被正確解析為 Carbon 的日期格式
+        'queue_at' => 'datetime', // 確保 'queue_at' 被正確解析為 Carbon 的日期格式
     ];
-
-    // 如果需要定義關聯，可以在這裡設置
-    // 假設 'user_id' 外鍵指向 'users' 表，並且 'inbox' 和 'user' 存在一對多關聯
-    public function user()
-    {
-        return $this->belongsTo(User::class, 'user_id');
-    }
 
     // 這裡可以根據需要定義其他關聯
     // 如果有其他模型需要與 'Inbox' 進行關聯，則可以在這裡設置
     public function comments()
     {
        return $this->hasMany(Comment::class);
+    }
+
+    // 如果有其他模型需要與 'User' 進行關聯，則可以在這裡設置
+    public function user()
+    {
+       return $this->belongsTo(User::class);
+    }
+
+    /**
+     * 查詢 Inbox 的所有 Users，使用多對多關聯
+     */
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'inbox_user', 'inbox_id', 'user_id');
     }
 }

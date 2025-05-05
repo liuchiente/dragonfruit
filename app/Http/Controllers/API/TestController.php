@@ -5,6 +5,8 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
+use App\Services\FirebaseService;
+
 class TestController extends Controller
 {
     public function category(Request $request){
@@ -881,5 +883,23 @@ class TestController extends Controller
           }
         ]',true);
         return $response;
+    }
+
+    protected $firebaseService;
+
+    public function __construct(FirebaseService $firebaseService)
+    {
+        $this->firebaseService = $firebaseService;
+    }
+
+    public function sendNotification(Request $request)
+    {
+        // 假設您已經從前端獲得設備的 FCM Token
+        $deviceToken = $request->input('device_token');
+        $title = "測試推播訊息";
+        $body = "這是從 Laravel 發送的推播訊息";
+
+        // 發送推播訊息
+        return $this->firebaseService->sendPushNotification($deviceToken, $title, $body);
     }
 }

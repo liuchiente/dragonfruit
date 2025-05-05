@@ -20,7 +20,7 @@ use App\Http\Controllers\API\TestController;
 use App\Http\Controllers\API\AnnounceController;
 use App\Http\Controllers\API\ProductController;
 use App\Http\Controllers\API\OrderController;
-
+use App\Http\Controllers\API\EnterpriseController;
 
 Route::get('bob/line', [LineApiController::class, 'alive'])->name('line.alive');
 Route::post('bob/line', [LineApiController::class, 'bob'])->name('line.bob');
@@ -34,6 +34,7 @@ Route::get('test/product', [TestController::class, 'product'])->name('test.produ
 Route::get('test/search', [TestController::class, 'search'])->name('test.search');
 Route::get('test/popular', [TestController::class, 'popular'])->name('test.popular');
 Route::get('test/news', [TestController::class, 'news'])->name('test.news');
+Route::post('test/push', [TestController::class, 'sendNotification'])->name('test.sendNotification');
 
 //公告
 Route::get('news/list', [AnnounceController::class, 'newsList'])->name('api.news.list');
@@ -59,24 +60,24 @@ use App\Http\Controllers\Task\InboxController;
 use App\Http\Controllers\Task\HealthController;
 use App\Http\Controllers\Task\OrganizationController;
 use App\Http\Controllers\Task\TaskController;
+use App\Http\Controllers\Task\ImageController;
 
 
-// Public route to create inbox message (no authentication)
-Route::post('/inbox', [InboxController::class, 'createInbox']);
 
 // Protected routes (authentication required)
 Route::middleware('auth:api')->prefix('v1')->group(function () {
     Route::get('/inbox/{userId}', [InboxController::class, 'getUserInbox']);
     Route::get('/inbox/{inboxId}/comments', [InboxController::class, 'getUserInboxComment']);
     Route::post('/inbox/{inboxId}/comments', [InboxController::class, 'createUserInboxComment']);
+    Route::post('/inbox', [InboxController::class, 'createInbox']);
 });
 
 Route::post('/firebaselogin', [FirebaseAuthController::class, 'login']);
 Route::post('/employeelogin', [EmployeeController::class, 'transfer']);
 
 Route::middleware('auth:api')->prefix('v1')->group(function () {
-    /*Route::put('/user/token', [FirebaseAuthController::class, 'updateUserToken']);
-    Route::get('/user', [FirebaseAuthController::class, 'getUserInformation']);
+    Route::patch('/user/token', [FirebaseAuthController::class, 'updateUserToken']);
+    /*Route::get('/user', [FirebaseAuthController::class, 'getUserInformation']);
     Route::put('/user', [FirebaseAuthController::class, 'updateUserInformation']);*/
     Route::get('/user', [AuthController::class, 'user']);
 });
@@ -94,6 +95,7 @@ Route::middleware('auth:api')->prefix('v1')->group(function () {
     Route::put('/user/team', [OrganizationController::class, 'updateUserTeam']);
     Route::post('/members/invite', [OrganizationController::class, 'inviteMembers']);
     Route::get('/organizations/{organizationId}/members', [OrganizationController::class, 'listMembers']);
+    Route::post('/uploadImage', [ImageController::class, 'upload']);
 });
 
 Route::middleware('auth:api')->prefix('v1')->group(function () {
@@ -106,3 +108,6 @@ Route::middleware('auth:api')->prefix('v1')->group(function () {
     // Get task status count by user ID
     Route::get('/tasks/status/{userId}', [TaskController::class, 'getTaskStatusCount']);
 });
+
+// API for enterprise message push
+Route::post('/v1/enterprise/notification', [EnterpriseController::class, 'notify']);

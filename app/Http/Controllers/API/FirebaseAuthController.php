@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Http\Controllers\Task;
+namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\FirebaseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
@@ -67,11 +68,11 @@ class FirebaseAuthController extends Controller
     // Update user FCM token
     public function updateUserToken(Request $request)
     {
-        $fcmToken = $request->input('fcm_token');
-
+       
         try {
             $user = Auth::user(); // Get the authenticated user
-
+            $fcmToken = $request->input('fcm_token');
+            $deviceName = $request->input('device_name');
             if (!$user) {
                 return response()->json([
                     'status' => false,
@@ -79,8 +80,9 @@ class FirebaseAuthController extends Controller
                 ], 401);
             }
 
-            // Update user's FCM token
-            $user->update(['fcm_token' => $fcmToken]);
+            //upate user fcm token
+            $firebaseService=new FirebaseService();
+            $firebaseService->updateUserPushTokenFcm($user, $fcmToken, $deviceName);
 
             return response()->json([
                 'status' => true,

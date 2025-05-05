@@ -21,11 +21,17 @@ class Organization extends Model
     // 可批量賦值的欄位
     protected $fillable = [
         'name',
+        'code',
         'description',
     ];
 
-        // 定義資料型態轉換，特別是 JSON 和 BOOLEAN 類型的欄位
+    // 定義資料型態轉換，特別是 JSON 和 BOOLEAN 類型的欄位
     protected $casts = [
         'teams' => 'array',           // 將 teams 轉換為 JSON 格式的陣列
     ];
+
+     public function users()
+    {
+        return $this->hasMany(User::class, 'organization_id');
+    }
 }

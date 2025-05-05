@@ -58,4 +58,10 @@ class Task extends Model
     {
         return $this->belongsToMany(User::class, 'task_user', 'task_id', 'user_id');
     }
+
+    // Task 和 Form 之間的多對多關聯（假設 assignees 是一個 JSON 格式的多個用戶）
+    public function forms()
+    {
+        return $this->hasMany(Form::class);
+    }
 }

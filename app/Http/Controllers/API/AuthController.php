@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Passport\Client;
 
+use Illuminate\Support\Facades\Auth;
+
+use App\Services\UserProfileService;
+
 class AuthController extends Controller
 {
     // 用戶註冊
@@ -71,21 +75,20 @@ class AuthController extends Controller
     }
 
     // 取得用戶的資料
-    public function user(Request $request)
-    {
-        $idx=$request->query('i');
-        ($idx==null||$idx=='')?0:$idx;
-        $profiles=$request->user()->profiles;
-        $profile_arr=(count($profiles)>0)?$profiles[0]->toArray():[];
-        foreach($profiles as $profile){
-            if($profile->organization_id==$idx){
-                $profile_arr=$profile->toArray();
-            }
-        }
+    public function user(Request $request){
+        
+        $user=Auth::user();
+        $device=$request->header('Device');
+        //想查詢的組織身份
+        $organization_id=$request->query('organization_id');
+        $userProfileService=new UserProfileService();
+        //處理身份資料
+        $profile=$userProfileService->getUser($user,$organization_id,$device);
+        $profile['auth_token']=$request->bearerToken();
         return response()->json([
             'status' => true,
             'message' => 'Query successful!',
-            'data' => $profile_arr,
+            'data' => $profile,
         ], 200);
     }
 }

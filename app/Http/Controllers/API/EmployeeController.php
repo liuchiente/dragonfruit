@@ -25,10 +25,18 @@ class EmployeeController extends Controller
     {
         $userAccount = $request->input('userAccount');
         $userPassword = $request->input('userPassword');
+        $organization = $request->header('Organization');
 
         try {
+
+            if($organization==null||$organization==''){
+                return response()->json([
+                'status' => false,
+                'message' =>'Organization not found',
+            ], 400);
+            }
             
-            $user = $this->employeeService->loginWithEmployee($userAccount, $userPassword);
+            $user = $this->employeeService->loginWithEmployee($userAccount, $userPassword, $organization);
 
             // 用 Passport 生成 token
             $token = $user->createToken('AppName')->accessToken;

@@ -10,8 +10,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
-use App\Services\LineService;
-
 class AuthenticatedSessionController extends Controller
 {
     /**
@@ -19,9 +17,7 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(): View
     {
-        $lineService=new LineService();
-        $line_login_url = $lineService->getLoginBaseUrl();
-        return view('auth.login')->with('line_login_url', $line_login_url);
+        return view('auth.login');
     }
 
     /**
