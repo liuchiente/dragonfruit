@@ -6,8 +6,6 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Log;
-
 
 use Carbon\Carbon;
 
@@ -20,6 +18,9 @@ use App\Models\User;
 use App\Models\UserProfile;
 use App\Models\UserToken;
 use App\Models\InboxNotification;
+
+
+use Illuminate\Support\Facades\Log;
 
 
 class FirebaseService
@@ -81,7 +82,7 @@ class FirebaseService
             $ids=$group->pluck('id')->toArray();
             $tokens=$group->pluck('tokens')->toArray();
             $title=$group->first()['title'];
-            $message=Str::limit($group->first()['message'], 30);
+            $message=$group->first()['message'];
             $inbox_id=$group->first()['inbox_id'];
 
             //notify data

@@ -63,13 +63,13 @@ use App\Http\Controllers\Task\TaskController;
 use App\Http\Controllers\Task\ImageController;
 
 
-
 // Protected routes (authentication required)
 Route::middleware('auth:api')->prefix('v1')->group(function () {
     Route::get('/inbox/{userId}', [InboxController::class, 'getUserInbox']);
     Route::get('/inbox/{inboxId}/comments', [InboxController::class, 'getUserInboxComment']);
     Route::post('/inbox/{inboxId}/comments', [InboxController::class, 'createUserInboxComment']);
     Route::post('/inbox', [InboxController::class, 'createInbox']);
+    Route::post('/uploadImage', [ImageController::class, 'upload']);
 });
 
 Route::post('/firebaselogin', [FirebaseAuthController::class, 'login']);
@@ -95,7 +95,6 @@ Route::middleware('auth:api')->prefix('v1')->group(function () {
     Route::put('/user/team', [OrganizationController::class, 'updateUserTeam']);
     Route::post('/members/invite', [OrganizationController::class, 'inviteMembers']);
     Route::get('/organizations/{organizationId}/members', [OrganizationController::class, 'listMembers']);
-    Route::post('/uploadImage', [ImageController::class, 'upload']);
 });
 
 Route::middleware('auth:api')->prefix('v1')->group(function () {

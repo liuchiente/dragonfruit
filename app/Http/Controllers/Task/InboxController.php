@@ -19,6 +19,7 @@ class InboxController extends Controller
     {
         try {
             $user = Auth::user();
+
             $inboxService=new InboxService();
             $inbox=$inboxService->getInbox($user);
 

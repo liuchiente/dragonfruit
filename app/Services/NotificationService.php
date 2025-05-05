@@ -91,8 +91,8 @@ class NotificationService
              $data = [
                 'title' => $group->first()->title,
                 'message' =>$group->first()->message,
-                'user_ids' => $group->pluck('user_id')->unique()->toArray(),
-                'tokens' => $group->pluck('token')->unique()->toArray(),
+                'user_ids' => $group->pluck('user_id')->toArray(),
+                'tokens' => $group->pluck('token')->toArray(),
                 'send_at' => $group->first()->send_at,
                 'inbox_id'=>$inbox_id,
             ];

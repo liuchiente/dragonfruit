@@ -106,9 +106,9 @@ class EmployeeService
     protected function updateUserProfiles($userData,$user,$organization)
     {
       
-        $team='employee';
+        $team='Employee';
         if($userData['identity']=='E'){
-            $team='employee';
+            $team='Engering';
         }
         $uuid=$this->generateUnique128Char();
         // 嘗試找到對應的用戶,依照對應組織建立一個身份

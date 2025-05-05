@@ -1,6 +1,7 @@
 <?php
-//use Illuminate\Support\Facades\Schedule;
 
+use Illuminate\Support\Facades\Schedule;
+use Illuminate\Support\Facades\Log;
 /*
 |--------------------------------------------------------------------------
 | Console Routes
@@ -12,11 +13,13 @@
 |
 */
 
-use Illuminate\Console\Scheduling\Schedule;
 
-return function (Schedule $schedule) {
- $schedule->command('app:background-scheduler')->cron('* * * * *')->withoutOverlapping();
- $schedule->command('app:send-line-notify-message')->cron('*/10 * * * *')->withoutOverlapping();
- $schedule->command('app:send-firebase-message')->cron('*/10 * * * *')->withoutOverlapping();
- $schedule->command('app:generate-notification-message')->cron('* * * * *')->withoutOverlapping();
-};
+
+//Schedule::command('app:background-scheduler')->cron('* * * * *')->withoutOverlapping();
+//Schedule::command('app:send-line-notify-message')->cron('*/10 * * * *')->withoutOverlapping();
+Schedule::command('app:send-firebase-message')->cron('*/10 * * * *')->withoutOverlapping();
+Schedule::command('app:generate-notification-message')->cron('*/10 * * * *')->withoutOverlapping();
+
+Schedule::call(function () {
+    Log::info('calling');
+})->everyFifteenMinutes();

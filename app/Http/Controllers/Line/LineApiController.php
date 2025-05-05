@@ -54,8 +54,8 @@ use \LINE\Webhook\Model\PnpDeliveryCompletionEvent;
 
 
 use App\Services\LineWebhookService;
-use App\Services\LineWebhookMessageService;
 use App\Services\LineFlexMessageService;
+
 
 
 class LineApiController extends Controller
@@ -75,7 +75,7 @@ class LineApiController extends Controller
         //檢查標頭是否正確
         $signature = $request->header(HTTPHeader::LINE_SIGNATURE);
         if ($signature==null||$signature=="") {
-            return response('Bad Request', 400);
+            return $res->withStatus(400, 'Bad Request');
         }
 
         //新增Client, 實際回應請求時, 會先呼叫Line Server
@@ -98,26 +98,18 @@ class LineApiController extends Controller
             $bodyContent = $request->getContent();
             $parsedEvents = EventRequestParser::parseEventRequest($bodyContent, $secret, $signature);
         } catch (InvalidSignatureException $e) {
-            return response('Invalid signature', 400);
+            return $res->withStatus(400, 'Invalid signature');
         } catch (InvalidEventRequestException $e) {
-            return response('Invalid event request', 400);
+            return $res->withStatus(400, "Invalid event request");
         }
 
-
-         //解析封包, 並分派資料處理入口
+         //解析封包, 並分派入口
         foreach ($parsedEvents->getEvents() as $event) {
             //呼叫服務
             $lineWebhookService=new LineWebhookService();
-            
-            $lineWebhookMessageService=new LineWebhookMessageService(json_decode($bodyContent,true));
-            $lineWebhookMessageService->saveMessageLog();
-            $lineWebhookMessageService->saveMessageText();
-            $lineWebhookMessageService->saveMessageImage();
-            $lineWebhookMessageService->saveMessageAudio();
-            $lineWebhookMessageService->saveMessageFile();
-            $lineWebhookMessageService->saveMessageLocation();
 
-
+            //判斷訊息
+            $message = $event->getMessage();
             //判斷對話來源
             $source=$event->getSource();
 
@@ -125,50 +117,17 @@ class LineApiController extends Controller
                 //一般對話
 
                 if ($event instanceof MessageEvent){
+                    //訊息
+                    Log::info('User MessageEventt has come');
 
-                    //取得訊息內下
-                    $message = $event->getMessage();
-
-                    //使用者代號、對話類型、群組代號
-                    $user_id=$source->getUserId();
-                    $user_type=$source->getType();
-                    $group_id="";
-
-                    //一般文字訊息
-                    $responsePayload=[];
-
-                    //訊息處理
-                    $response = $lineWebhookService->entryMessageMember($message,$source);
-                    //如果訊息存在的話, 放進封裝裡面等待回傳
-                    if(isset($response['reply'])&&($response['reply'])){
-                        $responsePayload[]=$response['message'];
-                    }
-
-                    //呼叫客服
-                    $response = $lineWebhookService->giveCallingbell($message,$source);
-                    //如果訊息存在的話, 放進封裝裡面等待回傳
-                    if(isset($response['reply'])&&($response['reply'])){
-                        $responsePayload[]=$response['message'];
-                    }
-
-                    Log::info(json_encode($responsePayload));
-
+                    $responsePayload = $lineWebhookService->entryMessageMember($message);
                     //針對每個請求回應
                     $messagingApi->replyMessage(new ReplyMessageRequest([
                         'replyToken' => $event->getReplyToken(),
-                        'messages' =>$responsePayload,
+                        'messages' => [
+                            $responsePayload
+                        ],
                     ]));
-
-                   
-                    //紀錄訊息
-                    $source=$event->getSource();
-                    $messag_loggin=[];
-                    $messag_loggin['type']="message";
-                    $messag_loggin['user_id']=$source->getUserId();
-                    $messag_loggin['user_type']=$source->getType();
-                    $messag_loggin['message_type']="text";
-                    $messag_loggin['message_content']=$message->getText();
-                    $lineWebhookService->entryMessageLogging($messag_loggin);
 
                 }else if ($event instanceof FollowEvent){
                     //追蹤
@@ -181,22 +140,9 @@ class LineApiController extends Controller
                     $lineWebhookService->disableLineChat($event,LineWebhookService::__CHAT_TYPE_USER);
                     
                 }else if ($event instanceof PostbackEvent){
-                    //POSTBACK
-                    $user_id=$source->getUserId();
-                    $post_back = $event->getPostback();
-
-                    $response = $lineWebhookService->entryPostback($user_id,$post_back);
-                    //如果訊息存在的話, 放進封裝裡面等待回傳
-                    if(isset($response['reply'])&&($response['reply'])){
-                        $responsePayload[]=$response['message'];
-                    }
-                   
-                    //針對每個請求回應
-                    $messagingApi->replyMessage(new ReplyMessageRequest([
-                        'replyToken' => $event->getReplyToken(),
-                        'messages' =>$responsePayload,
-                    ]));
-
+                //POSTBACK
+                    Log::info('Non message event has come');
+                    continue;
                 }else {
                     Log::info('Non User message event has come');
                     continue;
@@ -207,7 +153,6 @@ class LineApiController extends Controller
             
                 if ($event instanceof MessageEvent){
                     //訊息
-                        $message = $event->getMessage();
                         $responsePayload = $lineWebhookService->entryMessageGroup($message);
                         //針對每個請求回應
                         $messagingApi->replyMessage(new ReplyMessageRequest([
@@ -216,7 +161,6 @@ class LineApiController extends Controller
                                 $responsePayload
                             ],
                         ]));
-                        
                     }else if ($event instanceof JoinEvent){
                     //加入對話
                         //訊息處理
@@ -241,7 +185,7 @@ class LineApiController extends Controller
                         $lineWebhookService->updateLineMember($event);
                         $lineWebhookService->updateLineChat($event,LineWebhookService::__CHAT_TYPE_GROUP);
                     }else if ($event instanceof MemberLeftEvent){
-                        //成員離開對話
+                    //成員離開對話
                         //記錄使用者已經退群組
                         $lineWebhookService->disableLineChat($event,LineWebhookService::__CHAT_TYPE_GROUP);
                     }else if ($event instanceof PostbackEvent){
@@ -263,13 +207,13 @@ class LineApiController extends Controller
             }
     
             //追蹤
-            /*if (!($message instanceof TextMessageContent)) {
+            if (!($message instanceof TextMessageContent)) {
                 Log::info('Non message event has come');
                 continue;
-            }*/
+            }
             
         }
 
-        return response('Hello World', 200);
+        return response()->json([]);
     }
 }
