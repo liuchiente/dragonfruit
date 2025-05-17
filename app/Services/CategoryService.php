@@ -35,7 +35,7 @@ class CategoryService
 
         // 如果 assemble 為 false，返回簡單的陣列
         if (!$assemble) {
-            return $categories->map(function ($category) {
+            $data= $categories->map(function ($category) {
                 return [
                     'id' => $category->id,
                     'id_p' => $category->id_p,
@@ -46,6 +46,16 @@ class CategoryService
                     'updated_at' => $category->updated_at,
                 ];
             })->toArray();
+
+            return [
+                'data' => $data,
+                'pagination' => [
+                    'total' => $categories->total(),
+                    'per_page' => $categories->perPage(),
+                    'current_page' => $categories->currentPage(),
+                    'last_page' => $categories->lastPage(),
+                ],
+            ];
         }
 
         // 如果 assemble 為 true，則建立包含子類別的結構
@@ -55,41 +65,27 @@ class CategoryService
 
     private function assembleCategories($categories)
 {
-    $categoriesArray = [];
-    $categoriesMap = $categories->keyBy('id');
-
+    // 將每個 category 格式化，並建立 id map
+    $categoryMap = [];
     foreach ($categories as $category) {
-        // 將最上層的類別加入主陣列
-        if ($category->id_p == 0) {
-            $categoriesArray[$category->id] = $this->formatCategory($category);
+        $categoryMap[$category->id] = $this->formatCategory($category);
+    }
+
+    $tree = [];
+
+    // 建構樹狀結構
+    foreach ($categoryMap as $id => &$category) {
+        $parentId = $category['id_p'];
+        if ($parentId && isset($categoryMap[$parentId])) {
+            // 加入到父節點的 sub_categories
+            $categoryMap[$parentId]['sub_categories'][] = &$category;
         } else {
-            // 使用輔助函數添加子類別
-            $this->addCategoryToParent($categoriesArray, $category);
+            // 沒有父節點，代表是根節點
+            $tree[] = &$category;
         }
     }
 
-    return array_values($categoriesArray);
-}
-
-private function addCategoryToParent(&$categoriesArray, $category)
-{
-    var_dump( $category);
-    $parentId = $category->id_p;
-
-    // 如果父類別存在，則將類別添加到其子類別中
-    if (isset($categoriesArray[$parentId])) {
-        // 初始化子類別陣列（如果尚未存在）
-        if (!isset($categoriesArray[$parentId]['sub_categories'])) {
-            $categoriesArray[$parentId]['sub_categories'] = [];
-        }
-        // 將當前類別添加到父類別的子類別陣列中
-        $categoriesArray[$parentId]['sub_categories'][] = $this->formatCategory($category);
-    }
-
-    // 遞迴尋找父類別以支持 N 層結構
-    if (isset($categoriesArray[$parentId])) {
-        $this->addCategoryToParent($categoriesArray, $categoriesArray[$parentId]);
-    }
+    return $tree;
 }
 
     

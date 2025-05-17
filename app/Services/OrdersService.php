@@ -17,23 +17,48 @@ class OrdersService
     private const __DEFAULT_ROWS=10;
     private const __DEFAULT_PAGE=1;
   
-    /**
-     * 訂單清單
-     */
-    public function getList($opt=[]){
-        //初始化條件
-        $opt['orderBy']=isset($opt['orderBy'])?$opt['orderBy']:"id";
-        $opt['asc']=isset($opt['asc'])?$opt['asc']:"desc";
-        $opt['row']=(int)(isset($opt['row'])?$opt['row']:self::__DEFAULT_ROWS);
-        $opt['page']=(int)(isset($opt['page'])?$opt['page']:self::__DEFAULT_PAGE);
+    public function getList(array $opt = [], array $filter = [])
+    {
+        $page = $opt['page'] ?? self::__DEFAULT_PAGE;
+        $row = $opt['row'] ?? self::__DEFAULT_ROWS;
+        $orderBy = $opt['orderBy'] ?? 'id';
+        $direction = $opt['direction'] ?? 'desc';
 
-        $offset=$opt['page']*$opt['row'];
+        $query = Order::query()
+            ->when(!empty($filter['keyword']), function ($q) use ($filter) {
+                $keyword = $filter['keyword'];
+                $q->where(function ($subQuery) use ($keyword) {
+                    $subQuery->where('order_no', 'like', "%{$keyword}%")
+                             ->orWhere('customer_name', 'like', "%{$keyword}%")
+                             ->orWhere('ship_name', 'like', "%{$keyword}%");
+                });
+            })
+            ->orderBy($orderBy, $direction);
 
-        //主題、內容、發佈人、超連結
-        $newsList=News::select('id','suject','content','publisher','link_o')->offset($offset)->limit($opt['page'])->orderBy($opt['orderBy'],$opt['asc'])->get();
-        return $newsList;
+        $orders = $query->paginate($row, ['*'], 'page', $page);
+
+        $data = $orders->getCollection()->map(function ($item) {
+            return [
+                'order_no' => $item->order_no,
+                'order_date' => $item->order_date,
+                'customer_name' => $item->customer_name,
+                'ship_contact' => $item->ship_contact,
+                'ship_name' => $item->ship_name,
+                'ship_tel' => $item->ship_tel,
+                'ship_date' => $item->ship_date,
+            ];
+        })->toArray();
+
+        return [
+            'data' => $data,
+            'pagination' => [
+                'total' => $orders->total(),
+                'per_page' => $orders->perPage(),
+                'current_page' => $orders->currentPage(),
+                'last_page' => $orders->lastPage(),
+            ]
+        ];
     }
-
     /**
      * 訂單細節
      */

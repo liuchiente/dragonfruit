@@ -28,11 +28,10 @@ class ProductController extends Controller
             'asc' => $request->query('a'),
             'row' => $request->query('r'),
             'page' => $request->query('p'),
-            'query' => $request->query('q'),
         ];
 
         $filter = [
-            'categories.id' => $request->query('c'),
+             'keyword' => $request->query('q'),
         ];
 
         $result = [
@@ -41,23 +40,7 @@ class ProductController extends Controller
         ];
 
         try {
-            $partsItems = $this->partsService->getList($params,$filter);
-             // 重新組合資料
-            $data = [];
-            foreach ($partsItems['data'] as $item) {
-                $data[] = [
-                    'id' => $item['id'],
-                    'part_no' => $item['part_no'],
-                    'part_name' => $item['part_name'],
-                    'part_price' => $item['part_price'],
-                    'thumb' => $item['thumb'],
-                    'brand' => $item['brand'],
-                    'model' => $item['model'],
-                    'category_id' => $item['category_id'],
-                    'category_name' => $item['category_name'],
-                    // 根據需求添加其他屬性
-                ];
-            }
+            $data = $this->partsService->getList($params,$filter);
             $result = [
                 'data' => $data,
                 'is_done' => 'T',
@@ -96,7 +79,65 @@ class ProductController extends Controller
 
     public function categoriesList(Request $request)
     {
-        /*$json_str='{
+        
+        $assemble = $request->query('s')==true ?? false;
+
+        // 從查詢字串獲取參數
+        $params = [
+            'orderBy' => $request->query('o'),
+            'asc' => $request->query('a'),
+            'row' => $request->query('r'),
+            'page' => $request->query('p'),
+            'query' => $request->query('q'),
+        ];
+
+        $result = [
+            'data' => null,
+            'is_done' => 'F',
+        ];
+
+    
+        try {
+            
+            // 呼叫 CategoryService 的 getList 方法
+            $categories = $this->categoryService->getList($params, $assemble);
+
+            // 重新組合每個類別
+            $data = [];
+            foreach ($categories as $category) {
+                $data[] = [
+                    'id' => $category['id'],
+                    'id_p' => $category['id_p'],
+                    'category_name' => $category['category_name'],
+                    'search' => $category['search'],
+                    'category_ord' => $category['category_ord'],
+                    'created_at' => $category['created_at'],
+                    'updated_at' => $category['updated_at'],
+                    'sub_categories' => $category['sub_categories'] ?? [],
+                ];
+
+        
+            }
+
+            $result = [
+                'data' =>  $categories,
+                'is_done' => 'T',
+            ];
+        } catch (\Exception $e) {
+            print($e);
+            // 例外處理，返回錯誤訊息
+            $result = [
+                'data' => null,
+                'is_done' => 'F',
+            ];
+        }
+
+
+        // 轉換成 JSON 並返回
+        return response()->json($result);
+    }
+
+    /*$json_str='{
            "is_done":true,
            "payload":[
               {
@@ -132,57 +173,4 @@ class ProductController extends Controller
            ]
         }';*/
        
-        $assemble = $request->query('s')==true ?? false;
-
-        // 從查詢字串獲取參數
-        $params = [
-            'orderBy' => $request->query('o'),
-            'asc' => $request->query('a'),
-            'row' => $request->query('r'),
-            'page' => $request->query('p'),
-            'query' => $request->query('q'),
-        ];
-
-        $result = [
-            'data' => null,
-            'is_done' => 'F',
-        ];
-
-    
-       // try {
-            
-            // 呼叫 CategoryService 的 getList 方法
-            $categories = $this->categoryService->getList($params, $assemble);
-
-            // 重新組合每個類別
-            /*$data = [];
-            foreach ($categories as $category) {
-                $data[] = [
-                    'id' => $category['id'],
-                    'id_p' => $category['id_p'],
-                    'category_name' => $category['category_name'],
-                    'search' => $category['search'],
-                    'category_ord' => $category['category_ord'],
-                    'created_at' => $category['created_at'],
-                    'updated_at' => $category['updated_at'],
-                    'sub_categories' => $category['sub_categories'] ?? [],
-                ];
-            }*/
-
-            $result = [
-                'data' =>  $categories,
-                'is_done' => 'T',
-            ];
-        //} catch (\Exception $e) {
-            // 例外處理，返回錯誤訊息
-            $result = [
-                'data' => null,
-                'is_done' => 'F',
-            ];
-        //}
-
-
-        // 轉換成 JSON 並返回
-        return response()->json($result);
-    }
 }

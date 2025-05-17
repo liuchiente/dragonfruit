@@ -25,7 +25,10 @@ class AnnounceController extends Controller
             'asc' => $request->query('a'),
             'row' => $request->query('r'),
             'page' => $request->query('p'),
-            'query' => $request->query('q'),
+        ];
+
+        $filter = [
+             'keyword' => $request->query('q'),
         ];
 
         $result = [
@@ -35,25 +38,14 @@ class AnnounceController extends Controller
 
         try {
             // 調用 NewsService 的 getList 方法
-            $newsItems = $this->newsService->getList($params);
-             // 重新組合資料
-            $data = [];
-            foreach ($newsItems['data'] as $item) {
-                $data[] = [
-                    'id' => $item['id'],
-                    'publisher' => $item['publisher'],
-                    'subject' => $item['subject'],
-                    'publish_at' => $item['publish_at'],
-                    'expired_at' => $item['expired_at'],
-                    // 根據需求添加其他屬性
-                ];
-            }
-
+            $data = $this->newsService->getList($params,$filter);
+           
             $result = [
                 'data' => $data,
                 'is_done' => 'T',
             ];
         } catch (\Exception $e) {
+            print($e);
             // 例外處理，返回錯誤訊息
             $result = [
                 'data' => null,
